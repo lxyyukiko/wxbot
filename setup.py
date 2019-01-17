@@ -2,7 +2,7 @@
 
 from setuptools import setup
 
-version = 'v1.0.0'
+version = 'v1.0.1'
 
 setup(
     name = 'wxbot',
@@ -19,8 +19,8 @@ setup(
     author = 'cfn' ,
     author_email = 'cfn@leapy.cn',
     url = 'https://github.com/ileapy/wxbot',
-    download_url = 'https://github.com/pandolia/qqbot/archive/%s.tar.gz' % version,
-    keywords = ['QQBot', 'conversation robot', 'tencent', 'qq',
+    download_url = 'https://github.com/ileapy/wxbot/archive/%s.tar.gz' % version,
+    keywords = ['WXBot', 'conversation robot', 'tencent', 'weixin',
                 'web', 'network', 'python', 'http'],
     classifiers = [],
 )
