@@ -2,16 +2,16 @@
 
 from setuptools import setup
 
-version = 'v1.0.1'
+version = 'v1.1.1'
 
 setup(
     name = 'wxbot',
     version = version,
-    packages = ['wxbot', 'plugins'],
+    packages = ['wxbot', 'plugins','wxbotdb'],
     entry_points = {
         'console_scripts': [
-            'wxbot = qqbot:RunBot',
-            'wx = wxbot:QTerm'
+            'wxbot = wxbot.wxcore:wxRun',
+            'wx = wxbot.wxcore:wxCMD'
         ]
     },
     install_requires = ['requests', 'certifi', 'apscheduler'],

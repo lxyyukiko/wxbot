@@ -16,6 +16,7 @@ class MyMail(wxmessage.message):
         self.serverpswd = wxconf.WXConf().mailconf['mailServerPswd']
         self.fromUser = wxconf.WXConf().mailconf['fromUser']
         self.toUser = wxconf.WXConf().mailconf['toUser']
+        self.qrCodeType = wxconf.WXConf().baseconf['qrCodeType']
         self.data = data
         # print(self.data['content'])
         pass
@@ -26,7 +27,7 @@ class MyMail(wxmessage.message):
         if 'content' in self.data:
             s.add_Content(self.data['content'], 'plain')
         if 'image' in self.data:
-            s.add_img(self.data['image'])
+            s.add_img(self.data['image'],self.qrCodeType)
         s.send()
 
         pass
@@ -66,7 +67,6 @@ class SMTP(wxmessage.message):
         pass
 
     # 添加图片
-    # self.data['image']
     def add_img(self, img,img_type='file'):
         if img_type == 'file':
             img_file = open(img, 'rb').read()

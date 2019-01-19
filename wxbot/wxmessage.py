@@ -44,7 +44,7 @@ class message(object):
             self.message("致命错误：", params)
 
     def message(self, _msg, params):
-        msg = '['+time.strftime('%Y-%m-%d %H:%M;%S')+']' + ' '+_msg
+        msg = '['+time.strftime('%Y-%m-%d %H:%M:%S')+']' + ' '+_msg
         for i in params:
             msg += str(i) + ' '
         msg += "\n"

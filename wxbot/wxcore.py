@@ -1,25 +1,28 @@
 # -*- coding:utf-8 -*-
 __authon__ = "cfn@leapy.cn"
 
-from wxbot import wxmessage
+from wxbot import wxparse
+from wxbot import wxmessage,wxmail
+import subprocess
 
-class wxbot(wxmessage.message):
+
+class core():
+
     def __init__(self):
         wxmessage.message.__init__(self)
-        pass
+        self.wx = wxparse.parse()
+
+    def WxRun(self):
+        self.wx.login()
 
 
 
+def wxRun():
+    c = core()
+    c.WxRun()
+
+def wxCMD():
+    pass
 
 
-
-
-
-
-
-
-
-
-
-
-
+wxRun()

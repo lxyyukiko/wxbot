@@ -5,3 +5,4 @@ from .wxsession import *
 from .wxconf import WXConf
 from .wxmessage import *
 from .wxcore import *
+from .wxparse import *
