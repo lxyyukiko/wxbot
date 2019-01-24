@@ -3,7 +3,6 @@
 __author__ = "cfn@leapy.cn"
 
 from wxbot import wxconf
-import logging
 import os
 import time
 

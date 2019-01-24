@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup
+from wxbot import wxconf
 
-version = 'v1.1.1'
+version = wxconf.WXConf().baseconf['version']
 
 setup(
     name = 'wxbot',

@@ -17,7 +17,27 @@ class WXConf:
             # 登录二维码保存类型 bytes
             'qrCodeType': 'bytes',
             # 登录二维码保存位置，仅当保存类型为file时启用
-            'qrCodePath': 'D:/Users/Administrator/PycharmProjects/wxbot/log/'
+            'qrCodePath': 'D:/Users/Administrator/PycharmProjects/wxbot/log/',
+            'version': "v1.2.0",
+            'help': """
+[wxbot]
+    启动服务：wxbot
+    选项：
+        -v, --version    显示版本信息
+        -h, --help       帮助信息
+        -r, --restart    重新登录
+        -s, --stop       停止服务
+[wx]
+    更新：
+        update group     更新群组
+        update buddy     更新联系人
+    查询：
+        list group       查询群组
+        list buddy       查询联系人
+    发送：
+        send group xxx xxx   发送群组消息
+        send buddy xxx xxx   发送好友消息
+"""
         }
 
         # 邮件配置
