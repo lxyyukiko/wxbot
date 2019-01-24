@@ -47,10 +47,10 @@ class WXConf:
             # 邮件服务器端口
             'mailServerPort': '465',
             # 邮件服务器密码
-            'mailServerPswd': 'zzobqxdahxgzdhid',
+            'mailServerPswd': 'xxxxxxxxxxxxxxx',
             # 发送地址
-            'fromUser': 'cfn@leapy.cn',
+            'fromUser': 'xxxxxxxxxxxxxxx',
             #  接收二维码邮件地址
-            'toUser': '2565275061@qq.com',
+            'toUser': 'xxxxxxxxxxxxxx',
         }
 
