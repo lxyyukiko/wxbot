@@ -15,7 +15,7 @@ setup(
             'wx = wxbot.wxcore:wxCMD'
         ]
     },
-    install_requires = ['requests', 'certifi', 'apscheduler'],
+    install_requires = ['requests', 'certifi', 'apscheduler', 'setuptools'],
     description = "WXBot: A conversation robot base on Tencent's Webweixin",
     author = 'cfn' ,
     author_email = 'cfn@leapy.cn',
