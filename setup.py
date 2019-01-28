@@ -2,6 +2,11 @@
 
 from setuptools import setup
 from wxbot import wxconf
+import os
+
+
+with open(r"README.md","r",encoding='UTF-8') as fh:
+    long_description = fh.read()
 
 version = wxconf.WXConf().baseconf['version']
 
@@ -15,13 +20,16 @@ setup(
             'wx = wxbot.wxcore:wxCMD'
         ]
     },
-    install_requires = ['requests', 'certifi', 'apscheduler', 'setuptools'],
-    description = "WXBot: A conversation robot base on Tencent's Webweixin",
-    author = 'cfn' ,
-    author_email = 'cfn@leapy.cn',
-    url = 'https://github.com/ileapy/wxbot',
-    download_url = 'https://github.com/ileapy/wxbot/archive/%s.tar.gz' % version,
-    keywords = ['WXBot', 'conversation robot', 'tencent', 'weixin',
-                'web', 'network', 'python', 'http'],
-    classifiers = [],
+    data_files = [
+     ('wxbot', ['wxbot/wx.conf'])
+    ],
+    long_description= long_description,
+    long_description_content_type= "text/markdown",
+    install_requires= ['requests', 'apscheduler', 'setuptools'],
+    description= "WXBot: A conversation robot base on Tencent's Webweixin",
+    author= 'cfn',
+    author_email= 'cfn@leapy.cn',
+    url= 'https://github.com/ileapy/wxbot',
+    keywords= ['WXBot', 'conversation robot', 'tencent', 'weixin','web', 'network', 'python', 'http'],
+    classifiers= [],
 )

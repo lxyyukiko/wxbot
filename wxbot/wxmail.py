@@ -28,12 +28,12 @@ class MyMail(wxmessage.message):
             s.add_Content(self.data['content'], 'plain')
         if 'image' in self.data:
             s.add_img(self.data['image'],self.qrCodeType)
-        s.send()
+        return s.send()
 
         pass
 
     def run(self):
-        self.sendMail()
+        return self.sendMail()
         pass
 
 
@@ -87,9 +87,10 @@ class SMTP(wxmessage.message):
             s.login(self.fromUser, self.serverpswd)
             s.sendmail(self.fromUser, self.toUser, self.msg.as_string())
             self.success('发送邮件成功')
-
+            return True
         except Exception as e:
             self.error('发送邮件失败:', e)
+            return False
 
 if __name__ == '__main__':
     data = {

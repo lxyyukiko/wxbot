@@ -2,7 +2,7 @@
 import json
 import math
 import random
-
+import gzip
 __authon__ = "cfn@leapy.cn"
 
 import requests
@@ -24,13 +24,13 @@ class parse(wxmessage.message):
         self.image = ""    # qrcode
         self.uuid = ""     # uuid
         self.authStatus = ""  # 登录状态信息
-        self.logined = False  # 登录状态
         self.deviceID = ""
         self.wxsid = ""
         self.skey = ""
         self.wxuin = ""
         self.cookies = ""
         self.userInfo = "" #用户信息
+        self.flow = 0
     pass
 
     # 获取UUID
@@ -42,8 +42,10 @@ class parse(wxmessage.message):
         uuid = re.search('window.QRLogin.uuid = "(.*?)"',r).group(1)
         self.startTime = int(time.time() * 1000)
         if code == "200":
+            self.flow += 1
             self.uuid = uuid
         else:
+            self.flow = 0
             self.uuid = 0
 
     # 获取二维码 根据配置获取图片类型
@@ -56,11 +58,14 @@ class parse(wxmessage.message):
                 for chunk in r.iter_content(chunk_size=32):
                     f.write(chunk)
             self.image = file
+            self.flow += 1
             return file
         elif self.qrCodeType == 'bytes':
             r = self.session.get(url=url, stream=True)
             self.image = r.content
+            self.flow += 1
             return r.content
+        self.flow = 0
         pass
 
     # 发送邮件
@@ -69,7 +74,10 @@ class parse(wxmessage.message):
             'content': '请使用微信扫码登录邮件中的二维码',
             'image': self.image
         }
-        wxmail.MyMail(data).run()
+        if wxmail.MyMail(data).run():
+            self.flow += 1
+        else:
+            self.flow = 0
         pass
 
     # 发送设备ID
@@ -137,6 +145,7 @@ class parse(wxmessage.message):
             ]
         }
         self.session.post(url=url,data=data)
+        self.flow += 1
         pass
 
     # 获取扫码登录状态
@@ -157,6 +166,7 @@ class parse(wxmessage.message):
         self.pass_ticket = re.search("<pass_ticket>(.*?)</pass_ticket>", r.text).group(1)
         self.isgrayscale = re.search("<isgrayscale>(.*?)</isgrayscale>", r.text).group(1)
         self.cookies = r.cookies
+        self.flow += 1
         pass
 
     # 等待扫码登录
@@ -180,12 +190,13 @@ class parse(wxmessage.message):
                     x, y = 1, 1
                 elif '200' in self.authStatus:
                     self.notice('已获授权')
-                    self.logined = True
+                    self.flow += 1
                     break
                 else:
                     self.error('获取二维码扫描状态时出错, html="%s"', self.authStatus)
-                    sys.exit(1)
+                    raise RuntimeError('获取二维码时出错')
         except Exception as e:
+            self.flow = 0
             self.error("登录时出错：", e)
         pass
 
@@ -244,12 +255,16 @@ class parse(wxmessage.message):
         }
         self.CookieInit()
         r = self.session.post(url=url, data=json.dumps(data), headers=self.session.headers)
-        self.userInfo = json.loads(r.text)['User']
-        self.syncKey = json.loads(r.text)['SyncKey']
+        if r.text:
+            self.userInfo = json.loads(r.text)['User']
+            self.syncKey = json.loads(r.text)['SyncKey']
+            self.flow += 1
+        else:
+            self.flow = 0
 
     # 微信状态通知
     def webwxstatusnotify(self):
-        self.notice(self.userInfo['UserName'])
+        # self.notice(self.userInfo['UserName'])
         url = "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify"
         data = {
             'BaseRequest': self.BaseRequestsInit(),
@@ -259,6 +274,7 @@ class parse(wxmessage.message):
             'ToUserName': self.userInfo['UserName'],
         }
         r = self.session.post(url=url, data=json.dumps(data))
+        self.flow += 1
         # self.notice(r.text)
         pass
 
@@ -287,7 +303,7 @@ class parse(wxmessage.message):
                 time.sleep(3)
                 # self.notice(self.getUrlCombin(url, self.SyncCheckData(self.syncKey)))
                 self.CookieInit()
-                r = self.session.get(url=self.getUrlCombin(url, self.SyncCheckData(self.syncKey)),timeout=25)
+                r = self.session.get(url=self.getUrlCombin(url, self.SyncCheckData(self.syncKey)))
                 # self.notice(r.text)
                 selector = re.search('selector:"(.*?)"', r.text).group(1)
                 retcode = re.search('retcode:"(.*?)"', r.text).group(1)
@@ -298,9 +314,9 @@ class parse(wxmessage.message):
                 elif retcode == '0' and selector == '7':
                     self.notice("进入或者离开状态")
                 elif retcode == '1101' or retcode == '1102':
-                    self.notice("用户未登录此设备")
-                    sys.exit(1)
-                self.notice(time.localtime())
+                    self.notice("您已退出登录，或未登录此设备")
+                    raise RuntimeError("")
+                self.notice(time.strftime('%Y-%m-%d %H:%M:%S'))
         except Exception as e:
             self.error("检查消息时出错：", e)
         pass
@@ -311,32 +327,30 @@ class parse(wxmessage.message):
         data = {
             'BaseRequest': self.BaseRequestsInit(),
             'SyncKey': self.syncKey,
-            'rr': "-"+str(self.GetR())
+            'rr': ~int(time.time())
         }
         self.CookieInit()
         self.session.headers.update({
-            "Accept": "application/json,text/plain, */*",
-            "Content-Type": "application/json;charset=UTF-8",
-            "Host": "wx2.qq.com",
-            "Origin": "https://wx2.qq.com",
-            "Referer": "https://wx2.qq.com/?&lang=zh_CN"
-
+            "Accept": "application/json,text/plain, */*"
         })
-        r = self.session.post(url=url,data=json.dumps(data))
-        # print(r.text)
-        if r.text:
-            self.syncKey = json.loads(r.text)['SyncKey']
-            msgList = json.loads(r.text)['AddMsgList']
-            # self.notice(msgList)
-            for _ in msgList:
-                if _['MsgType'] == 1:
-                    self.notice("获取到消息：",_['Content'])
-                elif _['MsgType'] == 47:
-                    self.notice("获取到消息：","[发送了一个表情，请在手机上查看]")
-                elif _['MsgType'] == 51:
-                    # self.notice("wxbot初始化成功")
-                    pass
-        pass
+        try:
+            r = self.session.post(url=url, data=json.dumps(data),timeout=60)
+            # print(r.text)
+            r.encoding = 'utf-8'
+            if r.text:
+                msgList = json.loads(r.text)['AddMsgList']
+                # self.notice(msgList)
+                for _ in msgList:
+                    if _['MsgType'] == 1:
+                        self.notice("获取到消息：", _['Content'])
+                        self.syncKey = json.loads(r.text)['SyncKey']
+                    elif _['MsgType'] == 47:
+                        self.notice("获取到消息：", "[发送了一个表情，请在手机上查看]")
+                    elif _['MsgType'] == 51:
+                        self.notice("初始化")
+                        pass
+        except:
+            pass
 
     # 获取
     def GetDeviceID(self):
@@ -344,6 +358,7 @@ class parse(wxmessage.message):
         for i in range(0, 15):
             DeviceID += str(random.randint(0, 9))
         self.deviceID = DeviceID
+        self.flow += 1
 
     # 组合url参数
     def getUrlCombin(self, domain, data):
@@ -352,17 +367,62 @@ class parse(wxmessage.message):
             url += k + '=' + v + '&'
         return url[:-1]
 
+    # 退出登录
+    def QuitLogin(self):
+        if self.flow == 0:
+            self.notice("未登录，已退出")
+        else:
+            url = "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxlogout?redirect=1&type=0&skey=" + self.skey
+            data = {
+                'sid': self.wxsid,
+                'uin': self.wxuin
+            }
+            self.session.post(url=url, data=json.dumps(data))
+            self.flow = 0
+        pass
+
     # 登录
     def login(self):
-        self.GetUUId()
-        self.GetDeviceID()
-        self.SendDeviceID()
-        self.GetQrCode()
-        self.SendMail()
-        self.waitForAuth()
-        if self.logined == "-2":
-            return
-        self.GetLoginInfo()
-        self.WXInit()
-        self.webwxstatusnotify()
-        self.SyncCheck()
+        try:
+            if self.flow != 0:
+                raise RuntimeError('初始化时出错')
+            self.GetUUId()
+            if self.flow != 1:
+                raise RuntimeError('获取uuid时出错')
+            self.GetDeviceID()
+            if self.flow != 2:
+                raise RuntimeError('获取设备ID时出错')
+            self.SendDeviceID()
+            if self.flow != 3:
+                raise RuntimeError('发送设备信息时出错')
+            self.GetQrCode()
+            if self.flow != 4:
+                print(self.flow)
+                raise RuntimeError('获取二维码时出错')
+            self.SendMail()
+            if self.flow != 5:
+                raise RuntimeError('发送邮件时出错')
+            self.waitForAuth()
+            if self.flow != 6:
+                raise RuntimeError('等待登录验证时出错')
+            self.GetLoginInfo()
+            if self.flow != 7:
+                raise RuntimeError('获取用户信息时出错')
+            self.WXInit()
+            if self.flow != 8:
+                raise RuntimeError('Webwx初始化时出错')
+            self.webwxstatusnotify()
+            if self.flow != 9:
+                raise RuntimeError('发送登录状态时出错')
+            self.SyncCheck()
+            if self.flow != 10:
+                raise RuntimeError('消息检查时出错')
+        except Exception as e:
+            self.error("程序已停止,错误如下：", e)
+            sys.exit(-1)
+
+    # 重新登录
+    def ReLogin(self):
+
+        pass
+

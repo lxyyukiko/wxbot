@@ -1,8 +1,12 @@
 # -*- coding:utf-8 -*-
-
+import os
+import sys
+import configparser
 
 class WXConf:
     def __init__(self):
+        self.cf = configparser.ConfigParser()
+        self.cf.read(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+"\wxbot\wx.conf")
 
         # 基本配置
         self.baseconf = {
@@ -13,12 +17,12 @@ class WXConf:
             # 是否记录日志
             'log' : True,
             # 日志文件存放位置
-            'logPath' : 'D:/Users/Administrator/PycharmProjects/wxbot/log/',
+            'logPath' : self.cf.get("base","logPath")+'/',
             # 登录二维码保存类型 bytes
             'qrCodeType': 'bytes',
             # 登录二维码保存位置，仅当保存类型为file时启用
-            'qrCodePath': 'D:/Users/Administrator/PycharmProjects/wxbot/log/',
-            'version': "v1.2.0",
+            'qrCodePath': self.cf.get("base","qrCodePath")+'/',
+            'version': "v1.2.3",
             'help': """
 [wxbot]
     启动服务：wxbot
@@ -37,20 +41,37 @@ class WXConf:
     发送：
         send group xxx xxx   发送群组消息
         send buddy xxx xxx   发送好友消息
-"""
+""",
+            'dbDir': self.cf.get("base","dbDir")
         }
 
         # 邮件配置
         self.mailconf = {
             # 邮件服务器地址
-            'mailServerAddr': 'smtp.qq.com',
+            'mailServerAddr': self.cf.get("mail","mailServerAddr"),
             # 邮件服务器端口
-            'mailServerPort': '465',
+            'mailServerPort': self.cf.get("mail","mailServerPort"),
             # 邮件服务器密码
-            'mailServerPswd': 'xxxxxxxxxxxxxxx',
+            'mailServerPswd': self.cf.get("mail","mailServerPswd"),
             # 发送地址
-            'fromUser': 'xxxxxxxxxxxxxxx',
+            'fromUser': self.cf.get("mail","fromUser"),
             #  接收二维码邮件地址
-            'toUser': 'xxxxxxxxxxxxxx',
+            'toUser': self.cf.get("mail","toUser"),
         }
 
+        self.init = {
+            'initEnd': self.cf.get("init",'initend')
+        }
+
+    def setConf(self, section, option, value):
+        self.cf.set(section=section,option=option,value=value)
+        try:
+            with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+"\wxbot\wx.conf", "w+") as f:
+                self.cf.write(f)
+        except ImportError:
+            pass
+        pass
+
+
+if __name__ == '__main__':
+    d = WXConf()

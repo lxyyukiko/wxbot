@@ -4,10 +4,11 @@ __authon__ = "cfn@leapy.cn"
 import sqlite3
 import time
 import sys
+import wxbot.wxconf
 
 class db:
     def __init__(self):
-        self.conn = sqlite3.connect('wxbot.db')
+        self.conn = sqlite3.connect(wxbot.wxconf.WXConf().baseconf['dbDir']+'/wxbot.db')
         self.curs = self.conn.cursor()
         self.init()
         pass
@@ -43,11 +44,9 @@ class db:
     def close(self):
         self.conn.close()
 
-# if __name__ == '__main__':
-#     d = db()
-#     info = d.getLoginInfo()
-#     print(info)
-#     d.close()
+if __name__ == '__main__':
+    d = db()
+    d.close()
 
 
 
