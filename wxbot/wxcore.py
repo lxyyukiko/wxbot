@@ -1,9 +1,26 @@
 # -*- coding:utf-8 -*-
+import socket
+import threading
+
 __authon__ = "cfn@leapy.cn"
 
-from wxbot import wxparse
+from wxbot import wxparse, wxserver
 from wxbot import wxconf
 import sys
+
+class myThread(threading.Thread):
+    def __init__(self, threadID, name):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+
+    def run(self):
+        if self.threadID == 1:
+            wxserver.mysocket("0.0.0.0","8088").run()
+            pass
+        elif self.threadID == 2:
+            wxparse.parse().login()
+            pass
 
 class configuration:
     def __init__(self):
@@ -22,6 +39,13 @@ class configuration:
             if self.wconf.init['initEnd'] == '1':
                 print("配置成功")
 
+class myClient():
+    def __init__(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(("0.0.0.0", "8088"))
+
+
+    pass
 
 def wxRun():
     argv = sys.argv[-1]
@@ -35,4 +59,19 @@ def wxRun():
         wx.QuitLogin()
     else:
         conf.check()
-        wx.login()
+        thread1 = myThread(1, "Thread-1")
+        thread2 = myThread(2, "Thread-2")
+        thread1.start()
+        thread2.start()
+        thread1.join()
+        thread2.join()
+
+def wxCMD():
+    argv = sys.argv[-1]
+    wx = wxparse.parse()
+    conf = configuration()
+    # 更新联系人
+    if argv == 'update contact':
+
+        pass
+    pass

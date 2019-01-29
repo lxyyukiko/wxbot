@@ -25,7 +25,7 @@ setup(
     ],
     long_description= long_description,
     long_description_content_type= "text/markdown",
-    install_requires= ['requests', 'apscheduler', 'setuptools'],
+    install_requires= ['requests', 'apscheduler', 'setuptools', 'qrcode_terminal'],
     description= "WXBot: A conversation robot base on Tencent's Webweixin",
     author= 'cfn',
     author_email= 'cfn@leapy.cn',

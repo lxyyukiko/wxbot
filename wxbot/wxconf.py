@@ -18,8 +18,8 @@ class WXConf:
             'log' : True,
             # 日志文件存放位置
             'logPath' : self.cf.get("base","logPath")+'/',
-            # 登录二维码保存类型 bytes
-            'qrCodeType': 'bytes',
+            # 登录二维码保存类型 bytes,views
+            'qrCodeType': 'views',
             # 登录二维码保存位置，仅当保存类型为file时启用
             'qrCodePath': self.cf.get("base","qrCodePath")+'/',
             'version': "v1.2.3",

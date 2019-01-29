@@ -2,14 +2,19 @@
 import json
 import math
 import random
-import gzip
+import threading
+import webbrowser
+from concurrent.futures import thread
+import pyqrcode
+
 __authon__ = "cfn@leapy.cn"
 
 import requests
-from wxbot import wxmessage,wxconf,wxmail
+from wxbot import wxmessage, wxconf, wxmail, wxserver, os
 import time
 import re
 import sys
+import subprocess
 
 class parse(wxmessage.message):
     def __init__(self):
@@ -59,12 +64,27 @@ class parse(wxmessage.message):
                     f.write(chunk)
             self.image = file
             self.flow += 1
-            return file
         elif self.qrCodeType == 'bytes':
             r = self.session.get(url=url, stream=True)
             self.image = r.content
             self.flow += 1
-            return r.content
+        elif self.qrCodeType == 'views':
+            r = self.session.get(url=url)
+            file = self.qrCodePath + 'qrcode.png'
+            with open(file, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=32):
+                    f.write(chunk)
+            if sys.version_info >= (3, 3):
+                from shlex import quote
+            else:
+                from pipes import quote
+            if sys.platform == "darwin":
+                command = "open -a /Applications/Preview.app %s&" % quote(file)
+                os.system(command)
+            else:
+                webbrowser.open(os.path.join(os.getcwd(), 'temp', file))
+            self.flow += 1
+
         self.flow = 0
         pass
 
@@ -74,6 +94,9 @@ class parse(wxmessage.message):
             'content': '请使用微信扫码登录邮件中的二维码',
             'image': self.image
         }
+        if self.qrCodeType == 'views':
+            self.flow += 1
+            return
         if wxmail.MyMail(data).run():
             self.flow += 1
         else:
@@ -169,6 +192,12 @@ class parse(wxmessage.message):
         self.flow += 1
         pass
 
+    # 开启服务
+    def startServer(self):
+        s = wxserver.mysocket("0.0.0.0","8088")
+        s.run()
+        pass
+
     # 等待扫码登录
     def waitForAuth(self):
         try:
@@ -200,6 +229,7 @@ class parse(wxmessage.message):
             self.error("登录时出错：", e)
         pass
 
+    #
     def BaseRequestsInit(self):
         return {
             "DeviceID": self.deviceID,

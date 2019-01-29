@@ -58,11 +58,8 @@
             -s, --stop       停止服务
     [wx命令]
         更新：
-            update group     更新群组
-            update buddy     更新联系人
+            update contact     更新联系人
         查询：
-            list group       查询群组
-            list buddy       查询联系人
+            list contact       列出联系人列表
         发送：
-            send group xxx xxx   发送群组消息
-            send buddy xxx xxx   发送好友消息
+            send contact xxx   发送消息
